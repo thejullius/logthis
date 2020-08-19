@@ -1,6 +1,6 @@
 {
   "name": "log-on-slack",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tool for log errors and notifications on slack",
   "main": "app.js",
   "author": "Julio Gonçalves",
