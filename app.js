@@ -2,6 +2,7 @@ const fetch = require('node-fetch')
 const moment = require('moment')
 const Pretty = require('pretty-error')
 const queryString = require('query-string')
+require('dotenv').config()
 
 const {
   SLACK_TOKEN: token,

@@ -6,6 +6,7 @@
   "author": "Julio Gonçalves",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^8.2.0",
     "moment": "^2.27.0",
     "node-fetch": "^2.6.0",
     "pretty-error": "^2.1.1",
