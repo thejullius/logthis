@@ -1,13 +1,14 @@
 {
   "name": "logthis",
   "version": "0.1",
-  "description": "Tool for log errors",
+  "description": "Tool for log errors and notifications on slack",
   "main": "app.js",
   "author": "Julio Gonçalves",
   "license": "MIT",
   "dependencies": {
+    "moment": "^2.27.0",
+    "node-fetch": "^2.6.0",
     "pretty-error": "^2.1.1",
-    "slack-notify": "^0.1.7",
-    "stack-trace": "^0.0.10"
+    "query-string": "^6.13.1"
   }
 }

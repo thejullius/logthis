@@ -1,82 +1,121 @@
-import moment from 'moment'
-import Pretty from 'pretty-error'
-import stackTrace from 'stack-trace'
+const fetch = require('node-fetch')
+const moment = require('moment')
+const Pretty = require('pretty-error')
+const queryString = require('query-string')
 
-const { SLACK_LOG, SLACK_CHANNEL, NODE_ENV } = process.env
-const slack = require('slack-notify')(SLACK_LOG)
-slack.onError = function (err) {
-  console.log('API error:', err)
+const {
+  SLACK_TOKEN: token,
+  SLACK_LOG_CHANNEL: channel,
+  SLACK_ICON_URL: icon_url,
+  SLACK_USERNAME: username
+} = process.env
+
+const params = {
+  token,
+  channel,
+  icon_url,
+  username
 }
 
-class LogController {
-  sendNotify({ file, resume, details }) {
-    const text = JSON.stringify(details, null, '  ')
-    const attachments = [
-      {
-        fallback: 'Error while rendering message',
-        pretext: `*${file}*`,
-        title: resume.replace(/  +/g, ''),
-        color: '#3498db',
-        text: `${'```'}${text}${'```'}`,
-        ts: moment().format('X')
-      }
-    ]
-    this.sendSlackMessage({ attachments })
-    console.log({ file, resume, details })
-  }
+const url = 'https://slack.com/api'
+const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
 
-  async sendError({ error, payload }) {
-    const [{ fileName, functionName }] = stackTrace.parse(error)
-
-    const pathOrFunction =
-      functionName || fileName.split('/').slice(-3).join('/')
-
-    const formattedError = new Pretty().withoutColors().render(error)
-
-    const blocks = [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*Something went wrong in ${pathOrFunction}*`
-        }
-      }
-    ]
-
-    const attachments = [
-      {
-        fallback: 'Error while rendering message',
-        color: '#e74c3c',
-        text: `${'```'}${formattedError}${'```'}`,
-        ts: moment().format('X')
-      },
-      {
-        fallback: 'Error while rendering message',
-        pretext: '*Payload*',
-        color: '#023e7d',
-        text: `${'```'}${JSON.stringify(payload, null, 2)}${'```'}`
-      }
-    ]
-
-    this.sendSlackMessage({
-      blocks,
-      attachments
-    })
-
-    console.log(new Pretty().render(error))
-  }
-
-  sendSlackMessage({ attachments, blocks }) {
-    const message = {
-      channel: SLACK_CHANNEL,
-      icon_url: 'https://impulsowork.slack.com/services/BLA0E0RA5',
-      username: `Atena - [${NODE_ENV}]`,
-      attachments
+async function postMessage (message) {
+  try {
+    const options = {
+      method: 'post',
+      headers
     }
 
-    !!blocks && (message.blocks = blocks)
-    slack.send(message)
+    const query = queryString.stringify({ ...params, ...message })
+    await fetch(`${url}/chat.postMessage?${query}`, options)
+  } catch (error) {
+    console.error(error)
   }
 }
 
-export default new LogController()
+async function getHistory (payload) {
+  const options = {
+    method: 'get',
+    headers
+  }
+
+  const query = queryString.stringify({ ...params, ...payload })
+  return await fetch(`${url}/conversations.history?${query}`, options)
+}
+
+function sendNotify ({ file, resume, details }) {
+  const text = JSON.stringify(details, null, '  ')
+  const attachments = [
+    {
+      fallback: 'Error while rendering message',
+      pretext: `*${file}*`,
+      title: resume.replace(/  +/g, ''),
+      color: '#3498db',
+      text: `${'```'}${text}${'```'}`,
+      ts: moment().format('X')
+    }
+  ]
+
+  postMessage({ attachments: JSON.stringify(attachments) })
+  console.log({ file, resume, details })
+}
+
+async function sendError ({ file, payload, error }) {
+  const formattedError = new Pretty().withoutColors().render(error)
+
+  const blocks = [
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `*${file}*`
+      }
+    }
+  ]
+
+  const attachments = [
+    {
+      fallback: 'Error while rendering message',
+      pretext: '*Error*',
+      color: '#e74c3c',
+      text: `${'```'}${formattedError}${'```'}`,
+      ts: moment().format('X')
+    }
+  ]
+
+  if (payload) {
+    attachments.push({
+      fallback: 'Error while rendering message',
+      pretext: '*Payload*',
+      color: '#023e7d',
+      text: `${'```'}${JSON.stringify(payload, null, 2)}${'```'}`
+    })
+  }
+
+  const options = {
+    text: `New error in ${file}`,
+    attachments: JSON.stringify(attachments),
+    blocks: JSON.stringify(blocks)
+  }
+
+  const response = await getHistory({
+    oldest: moment().startOf('day').format('X'),
+    latest: moment().endOf('day').format('X')
+  })
+
+  const { messages } = await response.json()
+
+  for (const message of messages) {
+    if (message.text === options.text) {
+      options.thread_ts = message.ts
+      break
+    }
+  }
+
+  postMessage(options)
+
+  console.log(new Pretty().render(error))
+}
+
+module.exports = { sendError, sendNotify }
