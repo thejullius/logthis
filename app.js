@@ -2,6 +2,7 @@ const fetch = require("node-fetch");
 const moment = require("moment");
 const Pretty = require("pretty-error");
 const queryString = require("query-string");
+const StackTracey = require('stacktracey')
 
 const {
   SLACK_TOKEN: token,
@@ -63,6 +64,10 @@ function sendNotify({ file, resume, details }) {
 
 async function sendError({ file, payload, error }) {
   const formattedError = new Pretty().withoutColors().render(error);
+  const stack = new StackTracey (error)
+  console.log('-=-=-=-=--=')
+  console.log(stack)
+  console.log('-=-=-=-=--=')
 
   const blocks = [
     {
