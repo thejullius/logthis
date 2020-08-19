@@ -1,6 +1,6 @@
 {
   "name": "logthis",
-  "version": "0.1",
+  "version": "1.0.0",
   "description": "Tool for log errors and notifications on slack",
   "main": "app.js",
   "author": "Julio Gonçalves",
