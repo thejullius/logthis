@@ -1,18 +1,24 @@
-export declare function configure(
+export interface configure {
   token: string,
   channel: string,
   icon_url?: string,
   username?: string
-): void;
+}
 
-export declare function sendError(
+export interface sendError {
   file: string,
   error: object,
   payload?: object | string
-): void;
+}
 
-export declare function sendNotify(
+export interface sendNotify {
   file: string,
   resume: string,
   payload?: object | string
-): void;
+}
+
+export declare function configure(payload: configure): void;
+
+export declare function sendError(payload: sendError): void;
+
+export declare function sendNotify(payload: sendNotify): void;
