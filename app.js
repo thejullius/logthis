@@ -46,6 +46,10 @@ async function getHistory(payload) {
 }
 
 function sendNotify({ file, resume, details }) {
+  if (['development', 'testing'].includes(nodeEnv) ) {
+    return console.log({ file, payload, error: error.toString() })
+  }
+
   const text = JSON.stringify(details, null, "  ");
   const attachments = [
     {
@@ -80,6 +84,10 @@ function getError(error) {
 }
 
 async function sendError({ file, payload, error }) {
+  if (['development', 'testing'].includes(nodeEnv) ) {
+    return console.log({ file, payload, error: error.toString() })
+  }
+
   const formattedError = getError(error);
 
   const blocks = [
