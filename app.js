@@ -9,6 +9,7 @@ const {
   SLACK_LOG_CHANNEL: channel,
   SLACK_ICON_URL: icon_url,
   SLACK_USERNAME: username,
+  NODE_ENV: nodeEnv
 } = process.env;
 
 const params = {
