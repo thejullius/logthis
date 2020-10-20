@@ -84,7 +84,7 @@ function getError(error) {
 }
 
 async function sendError({ file, payload, error }) {
-  if (['development', 'testing'].includes(nodeEnv) ) {
+  if (['development', 'testing'].includes(nodeEnv)) {
     return console.log({ file, payload, error: error.toString() })
   }
 
