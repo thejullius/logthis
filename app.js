@@ -48,7 +48,7 @@ async function getHistory(payload) {
 
 function sendNotify({ file, resume, details }) {
   if (['development', 'testing'].includes(nodeEnv) ) {
-    return console.log({ file, payload, error: error.toString() })
+    return console.log({ file, resume, details })
   }
 
   const text = JSON.stringify(details, null, "  ");
